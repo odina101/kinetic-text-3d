@@ -1,0 +1,4 @@
+node_modules
+dist
+*.mov
+.DS_Store
