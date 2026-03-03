@@ -2,10 +2,6 @@ import { useRef, useEffect, CSSProperties } from 'react';
 import * as THREE from 'three';
 import { Font } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
 import gsap from 'gsap';
 import opentype from 'opentype.js';
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders';
@@ -55,23 +51,24 @@ export function KineticText({
     const w = rect.width;
     const h = rect.height;
 
-    const bgColor = new THREE.Color(backgroundColor);
+    THREE.ColorManagement.enabled = false;
+
     const textColor = new THREE.Color(color);
     const glowClr = new THREE.Color(glowColor);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: false,
+      antialias: true,
       powerPreference: 'high-performance',
-      alpha: false,
+      alpha: true,
+      premultipliedAlpha: false,
     });
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h);
+    renderer.setSize(w, h, false);
 
     const scene = new THREE.Scene();
-    scene.background = bgColor.clone();
-    scene.fog = new THREE.FogExp2(bgColor, 0.02);
 
     const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
     camera.position.set(0, 0, 30);
@@ -97,23 +94,6 @@ export function KineticText({
     const letterMeshes: THREE.Mesh[] = [];
     const textGroup = new THREE.Group();
     scene.add(textGroup);
-
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(w, h),
-      1.5,
-      0.4,
-      0.85
-    );
-    bloomPass.threshold = 0.1;
-    bloomPass.strength = glowIntensity;
-    bloomPass.radius = 0.8;
-    composer.addPass(bloomPass);
-
-    const filmPass = new (FilmPass as any)(0.15, 0.025, 648, false);
-    composer.addPass(filmPass);
 
     const resolvedFontUrl = fontUrl || DEFAULT_FONT_URL;
 
@@ -255,7 +235,7 @@ export function KineticText({
         camera.position.y = Math.cos(time * 0.2) * 0.5;
         camera.lookAt(0, 0, 0);
 
-        composer.render();
+        renderer.render(scene, camera);
       }
       animate();
     }
@@ -275,8 +255,7 @@ export function KineticText({
       if (newW === 0 || newH === 0) return;
       camera.aspect = newW / newH;
       camera.updateProjectionMatrix();
-      renderer.setSize(newW, newH);
-      composer.setSize(newW, newH);
+      renderer.setSize(newW, newH, false);
     });
     ro.observe(wrapper);
 
@@ -307,7 +286,6 @@ export function KineticText({
         }
       });
       scene.remove(textGroup);
-      composer.dispose();
       renderer.dispose();
     };
   }, [text, fontUrl, color, glowColor, backgroundColor, glowIntensity, fontSize]);
@@ -317,15 +295,25 @@ export function KineticText({
     overflow: 'hidden',
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height,
+    backgroundColor,
     ...style,
+  };
+
+  const glowPx = Math.round(glowIntensity * 25);
+  const canvasStyle: CSSProperties = {
+    display: 'block',
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    inset: 0,
+    filter: glowIntensity > 0
+      ? `drop-shadow(0 0 ${glowPx}px ${glowColor}) drop-shadow(0 0 ${glowPx * 2}px ${glowColor})`
+      : undefined,
   };
 
   return (
     <div ref={wrapperRef} className={className} style={wrapperStyle}>
-      <canvas
-        ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '100%' }}
-      />
+      <canvas ref={canvasRef} style={canvasStyle} />
     </div>
   );
 }
