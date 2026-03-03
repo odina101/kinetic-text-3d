@@ -205,7 +205,6 @@ export function KineticText({
         tl.from(letterMeshes.map((m) => m.position), {
           z: -50,
           y: () => (Math.random() - 0.5) * 20,
-          rotationX: Math.PI * 2,
           duration: 2.5,
           stagger: { amount: 1, from: 'center' },
           ease: 'power3.out',
