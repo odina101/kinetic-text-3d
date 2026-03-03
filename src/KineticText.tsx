@@ -10,7 +10,8 @@ import gsap from 'gsap';
 import opentype from 'opentype.js';
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders';
 import { opentypeToTypeface } from './fontConverter';
-import defaultFontUrl from './fonts/NotoSansGeorgian-Bold.ttf';
+
+const DEFAULT_FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansGeorgian/NotoSansGeorgian-Bold.ttf';
 
 export interface KineticTextProps {
   text: string;
@@ -113,7 +114,7 @@ export function KineticText({
     const filmPass = new (FilmPass as any)(0.15, 0.025, 648, false);
     composer.addPass(filmPass);
 
-    const resolvedFontUrl = fontUrl || defaultFontUrl;
+    const resolvedFontUrl = fontUrl || DEFAULT_FONT_URL;
 
     opentype.load(resolvedFontUrl, (err: any, otFont: any) => {
       if (disposed) return;

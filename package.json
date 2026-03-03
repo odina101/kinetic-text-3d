@@ -1,6 +1,6 @@
 {
   "name": "kinetic-text-3d",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "3D kinetic typography React component with WebGL shaders, bloom glow, and mouse interaction",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
