@@ -11,7 +11,7 @@ import opentype from 'opentype.js';
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders';
 import { opentypeToTypeface } from './fontConverter';
 
-const DEFAULT_FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansGeorgian/NotoSansGeorgian-Bold.ttf';
+const DEFAULT_FONT_URL = 'https://fonts.gstatic.com/s/notosansgeorgian/v48/PlIaFke5O6RzLfvNNVSitxkr76PRHBC4Ytyq-Gof7PUs4S7zWn-8YDB09HFNdpsAy1j-.ttf';
 
 export interface KineticTextProps {
   text: string;
@@ -65,12 +65,13 @@ export function KineticText({
       powerPreference: 'high-performance',
       alpha: false,
     });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
 
     const scene = new THREE.Scene();
     scene.background = bgColor.clone();
-    scene.fog = new THREE.FogExp2(bgColor.getHex(), 0.02);
+    scene.fog = new THREE.FogExp2(bgColor, 0.02);
 
     const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
     camera.position.set(0, 0, 30);
@@ -116,15 +117,16 @@ export function KineticText({
 
     const resolvedFontUrl = fontUrl || DEFAULT_FONT_URL;
 
-    opentype.load(resolvedFontUrl, (err: any, otFont: any) => {
-      if (disposed) return;
-      if (err) {
-        console.error('KineticText: font load error', err);
-        return;
-      }
-
-      const typefaceData = opentypeToTypeface(otFont);
-      const font = new Font(typefaceData);
+    fetch(resolvedFontUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then((buffer) => {
+        if (disposed) return;
+        const otFont = opentype.parse(buffer);
+        const typefaceData = opentypeToTypeface(otFont);
+        const font = new Font(typefaceData);
 
       const size = fontSize;
       const depth = fontSize * 0.16;
@@ -211,6 +213,9 @@ export function KineticText({
         });
         startLoop();
       }
+    })
+    .catch((err) => {
+      if (!disposed) console.error('KineticText: font load error', err);
     });
 
     const clock = new THREE.Clock();
