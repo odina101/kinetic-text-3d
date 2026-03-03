@@ -2,7 +2,7 @@
 
 3D kinetic typography React component powered by Three.js. Features extruded text with WebGL shaders, bloom glow, film grain, mouse-reactive distortion, and a GSAP entrance animation.
 
-![kinetic-text-3d demo](https://raw.githubusercontent.com/user/kinetic-text-3d/main/demo.png)
+![kinetic-text-3d demo](https://raw.githubusercontent.com/odina101/kinetic-text-3d/main/demo.gif)
 
 ## Install
 

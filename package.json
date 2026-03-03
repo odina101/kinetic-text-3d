@@ -1,6 +1,6 @@
 {
   "name": "kinetic-text-3d",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "3D kinetic typography React component with WebGL shaders, bloom glow, and mouse interaction",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -48,5 +48,10 @@
     "bloom",
     "shader"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/odina101/kinetic-text-3d.git"
+  },
+  "homepage": "https://github.com/odina101/kinetic-text-3d",
   "license": "MIT"
 }
